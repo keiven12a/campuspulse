@@ -4,6 +4,7 @@ import Navbar from './components/layout/Navbar.jsx'
 import Footer from './components/layout/Footer.jsx'
 import Sidebar from './components/layout/Sidebar.jsx'
 import HeroSection from './components/landing/HeroSection.jsx'
+import IntroductionSection from './components/landing/IntroductionSection.jsx'
 
 function HomePage() {
   return (
@@ -11,6 +12,8 @@ function HomePage() {
       <Navbar />
 
       <HeroSection />
+
+      <IntroductionSection />
 
       <Footer />
     </main>
