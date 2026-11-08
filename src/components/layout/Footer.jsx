@@ -24,13 +24,11 @@ function Footer() {
             community.
           </p>
         </div>
-
         {/* Quick links */}
-        <div className="mb-8">
+        <nav aria-label="Footer navigation" className="mb-8">
           <h3 className="mb-4 text-sm font-semibold text-text-primary">
             Quick Links
           </h3>
-
           <div className="flex flex-wrap gap-x-6 gap-y-3">
             <Link
               to="/"
@@ -53,7 +51,7 @@ function Footer() {
               Register
             </Link>
           </div>
-        </div>
+        </nav>
 
         {/* Copyright */}
         <div className="border-t border-border pt-6">
