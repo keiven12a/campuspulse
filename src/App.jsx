@@ -3,58 +3,20 @@ import { Link, Route, Routes } from 'react-router-dom'
 import Navbar from './components/layout/Navbar.jsx'
 import Footer from './components/layout/Footer.jsx'
 import Sidebar from './components/layout/Sidebar.jsx'
+import HeroSection from './components/landing/HeroSection.jsx'
 
 function HomePage() {
   return (
     <main className="min-h-screen bg-background">
       <Navbar />
 
-      <div className="flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-xl rounded-2xl border border-border bg-surface p-8 text-center shadow-lg sm:p-12">
-          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-white">
-            C
-          </div>
-
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-accent">
-            Your campus, your voice
-          </p>
-
-          <h1 className="text-4xl font-bold tracking-tight text-text-primary sm:text-5xl">
-            CampusPulse
-          </h1>
-
-          <p className="mx-auto mt-5 max-w-md text-base leading-7 text-text-secondary">
-            Making our campus a better place, one report at a time.
-            Share campus issues, follow their progress, and help create
-            a better environment for everyone.
-          </p>
-
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link
-              to="/login"
-              className="rounded-lg bg-primary px-7 py-3 font-semibold text-white transition-colors hover:bg-primary-dark"
-            >
-              Login
-            </Link>
-
-            <Link
-              to="/register"
-              className="rounded-lg border border-primary px-7 py-3 font-semibold text-primary transition-colors hover:bg-primary/5"
-            >
-              Create an Account
-            </Link>
-          </div>
-
-          <p className="mt-8 text-sm text-text-secondary">
-            Built for a better campus community.
-          </p>
-        </div>
-      </div>
+      <HeroSection />
 
       <Footer />
     </main>
   )
 }
+
 
 function PlaceholderPage({ title }) {
   return (
