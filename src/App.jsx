@@ -5,21 +5,19 @@ import Footer from './components/layout/Footer.jsx'
 import Sidebar from './components/layout/Sidebar.jsx'
 import HeroSection from './components/landing/HeroSection.jsx'
 import IntroductionSection from './components/landing/IntroductionSection.jsx'
+import HowItWorks from './components/landing/HowItWorks.jsx'
 
 function HomePage() {
   return (
     <main className="min-h-screen bg-background">
       <Navbar />
-
       <HeroSection />
-
       <IntroductionSection />
-
+      <HowItWorks />
       <Footer />
     </main>
   )
 }
-
 
 function PlaceholderPage({ title }) {
   return (
