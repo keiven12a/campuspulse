@@ -31,33 +31,59 @@
 
   color: var(--color-text-primary);
   background: var(--color-background);
-
   color-scheme: light;
+
+  font-optical-sizing: auto;
 }
 
+/* Consistent box sizing */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
+/* Page behavior */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  line-height: 1.5;
+  background: var(--color-background);
 }
 
+/* React root */
 #root {
   min-height: 100vh;
 }
 
+/* Consistent form typography */
 button,
 input,
 textarea,
 select {
   font: inherit;
+}
+
+/* Accessible keyboard focus */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
