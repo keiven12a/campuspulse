@@ -7,27 +7,30 @@ import {
 
 function HowItWorks() {
   return (
-    <section className="bg-background px-6 py-16 sm:py-20">
+    <section className="bg-background px-5 py-16 sm:px-6 sm:py-20 lg:py-24">
       <div className="mx-auto max-w-7xl">
+        {/* Section heading */}
         <div className="mx-auto max-w-3xl text-center">
           <span className="text-sm font-semibold uppercase tracking-widest text-primary">
             How It Works
           </span>
 
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-text-primary sm:text-4xl">
+          <h2 className="mt-3 text-3xl font-bold leading-tight tracking-tight text-text-primary sm:text-4xl">
             Making campus improvements simple
           </h2>
 
-          <p className="mt-5 text-base leading-8 text-text-secondary">
+          <p className="mt-5 text-base leading-7 text-text-secondary sm:text-lg sm:leading-8">
             CampusPulse makes it easier for students to report
             campus problems and follow them until they are resolved.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          <div className="rounded-2xl border border-border bg-surface p-7">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <ClipboardList size={25} />
+        {/* Three steps */}
+        <div className="mt-12 grid gap-5 sm:mt-14 md:grid-cols-3 md:gap-6">
+          {/* Step 1 */}
+          <div className="group rounded-2xl border border-border bg-surface p-6 transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg sm:p-7">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-white">
+              <ClipboardList size={25} aria-hidden="true" />
             </div>
 
             <span className="mt-6 block text-sm font-semibold text-primary">
@@ -44,9 +47,10 @@ function HowItWorks() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-7">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Activity size={25} />
+          {/* Step 2 */}
+          <div className="group rounded-2xl border border-border bg-surface p-6 transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg sm:p-7">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-white">
+              <Activity size={25} aria-hidden="true" />
             </div>
 
             <span className="mt-6 block text-sm font-semibold text-primary">
@@ -63,9 +67,10 @@ function HowItWorks() {
             </p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-7">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <CheckCircle2 size={25} />
+          {/* Step 3 */}
+          <div className="group rounded-2xl border border-border bg-surface p-6 transition-all duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg sm:p-7">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-white">
+              <CheckCircle2 size={25} aria-hidden="true" />
             </div>
 
             <span className="mt-6 block text-sm font-semibold text-primary">
