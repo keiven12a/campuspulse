@@ -7,18 +7,26 @@ function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const navLinkStyles = ({ isActive }) =>
-    `font-medium transition-colors ${
+    `font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${
       isActive
         ? 'text-primary'
         : 'text-text-secondary hover:text-primary'
     }`
 
-  return (
-    <nav className="border-b border-border bg-surface">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+  const closeMenu = () => setIsMenuOpen(false)
 
+  return (
+    <nav
+      aria-label="Main navigation"
+      className="border-b border-border bg-surface"
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-6">
         {/* Brand */}
-        <Link to="/" className="flex items-center gap-2">
+        <Link
+          to="/"
+          onClick={closeMenu}
+          className="flex items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+        >
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-xl font-bold text-white">
             C
           </div>
@@ -41,7 +49,7 @@ function Navbar() {
           <NavLink
             to="/register"
             className={({ isActive }) =>
-              `rounded-lg px-5 py-2.5 font-semibold text-white transition-colors ${
+              `rounded-lg px-5 py-2.5 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${
                 isActive
                   ? 'bg-primary-dark'
                   : 'bg-primary hover:bg-primary-dark'
@@ -56,21 +64,29 @@ function Navbar() {
         <button
           type="button"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="rounded-lg p-2 text-text-primary hover:bg-background md:hidden"
+          className="rounded-lg p-2 text-text-primary transition-colors hover:bg-background focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:hidden"
           aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={isMenuOpen}
+          aria-controls="mobile-navigation"
         >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          {isMenuOpen ? (
+            <X size={24} aria-hidden="true" />
+          ) : (
+            <Menu size={24} aria-hidden="true" />
+          )}
         </button>
       </div>
 
       {/* Mobile navigation */}
       {isMenuOpen && (
-        <div className="flex flex-col gap-4 border-t border-border px-6 py-5 md:hidden">
+        <div
+          id="mobile-navigation"
+          className="flex flex-col gap-5 border-t border-border bg-surface px-5 py-5 sm:px-6 md:hidden"
+        >
           <NavLink
             to="/"
             className={navLinkStyles}
-            onClick={() => setIsMenuOpen(false)}
+            onClick={closeMenu}
           >
             Home
           </NavLink>
@@ -78,15 +94,15 @@ function Navbar() {
           <NavLink
             to="/login"
             className={navLinkStyles}
-            onClick={() => setIsMenuOpen(false)}
+            onClick={closeMenu}
           >
             Login
           </NavLink>
 
           <NavLink
             to="/register"
-            className="rounded-lg bg-primary px-5 py-2.5 text-center font-semibold text-white hover:bg-primary-dark"
-            onClick={() => setIsMenuOpen(false)}
+            className="rounded-lg bg-primary px-5 py-3 text-center font-semibold text-white transition-colors duration-200 hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            onClick={closeMenu}
           >
             Register
           </NavLink>
