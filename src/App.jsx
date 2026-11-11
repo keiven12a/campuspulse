@@ -9,6 +9,7 @@ import HowItWorks from './components/landing/HowItWorks.jsx'
 import BenefitsSection from './components/landing/BenefitsSection.jsx'
 import CTASection from './components/landing/CTASection.jsx'
 import Login from './pages/auth/Login.jsx'
+import Register from './pages/auth/Register'
 function HomePage() {
   return (
     <main className="min-h-screen bg-background">
@@ -112,10 +113,10 @@ function App() {
   element={<Login />}
 />
 
-      <Route
-        path="/register"
-        element={<PlaceholderPage title="Register" />}
-      />
+     <Route
+  path="/register"
+  element={<Register />}
+/>
 
       <Route
         path="/student/dashboard"
