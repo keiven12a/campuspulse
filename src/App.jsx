@@ -10,6 +10,8 @@ import BenefitsSection from './components/landing/BenefitsSection.jsx'
 import CTASection from './components/landing/CTASection.jsx'
 import Login from './pages/auth/Login.jsx'
 import Register from './pages/auth/Register'
+import StudentDashboard from './pages/student/Dashboard.jsx'
+
 function HomePage() {
   return (
     <main className="min-h-screen bg-background">
@@ -53,7 +55,7 @@ function PlaceholderPage({ title }) {
 }
 
 // Reusable dashboard layout
-function DashboardPage({ role }) {
+function DashboardPage({ role, children }) {
   const isAdmin = role === 'admin'
 
   return (
@@ -64,33 +66,35 @@ function DashboardPage({ role }) {
         <Sidebar role={role} />
 
         <main className="min-w-0 flex-1 p-6 sm:p-8">
-          <div className="mb-8">
-            <p className="text-sm font-medium text-primary">
-              {isAdmin ? 'Administration' : 'Student Portal'}
-            </p>
+          {!children && (
+            <div className="mb-8">
+              <p className="text-sm font-medium text-primary">
+                {isAdmin ? 'Administration' : 'Student Portal'}
+              </p>
 
-            <h1 className="mt-2 text-3xl font-bold text-text-primary">
-              {isAdmin ? 'Admin Dashboard' : 'Student Dashboard'}
-            </h1>
+              <h1 className="mt-2 text-3xl font-bold text-text-primary">
+                {isAdmin ? 'Admin Dashboard' : 'Student Dashboard'}
+              </h1>
 
-            <p className="mt-2 text-text-secondary">
-              {isAdmin
-                ? 'Manage campus reports and help improve the campus community.'
-                : 'Welcome! Report campus issues and follow their progress.'}
-            </p>
-          </div>
+              <p className="mt-2 text-text-secondary">
+                {isAdmin
+                  ? 'Manage campus reports and help improve the campus community.'
+                  : 'Welcome! Report campus issues and follow their progress.'}
+              </p>
+            </div>
+          )}
 
-          <div className="rounded-xl border border-border bg-surface p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-text-primary">
-              {isAdmin ? 'Manage Campus Issues' : 'Your Campus at a Glance'}
-            </h2>
+          {children || (
+            <div className="rounded-xl border border-border bg-surface p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-text-primary">
+                Manage Campus Issues
+              </h2>
 
-            <p className="mt-2 text-sm leading-6 text-text-secondary">
-              {isAdmin
-                ? 'Your report management tools will appear here as we build the admin dashboard.'
-                : 'Your reports, campus updates, and activity will appear here as we build the student dashboard.'}
-            </p>
-          </div>
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                Your report management tools will appear here as we build the admin dashboard.
+              </p>
+            </div>
+          )}
         </main>
       </div>
 
@@ -108,19 +112,17 @@ function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
 
-      <Route
-  path="/login"
-  element={<Login />}
-/>
+      <Route path="/login" element={<Login />} />
 
-     <Route
-  path="/register"
-  element={<Register />}
-/>
+      <Route path="/register" element={<Register />} />
 
       <Route
         path="/student/dashboard"
-        element={<DashboardPage role="student" />}
+        element={
+          <DashboardPage role="student">
+            <StudentDashboard />
+          </DashboardPage>
+        }
       />
 
       <Route
