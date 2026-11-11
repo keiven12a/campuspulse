@@ -12,26 +12,24 @@ function Login() {
     email: '',
     password: '',
   })
-const [isLoading, setIsLoading] = useState(false)
-  // Store validation errors
- const [errors, setErrors] = useState({})
-const [showPassword, setShowPassword] = useState(false)
-const [loginError, setLoginError] = useState('')
+
+  // Store loading, validation, visibility, and login error states
+  const [isLoading, setIsLoading] = useState(false)
+  const [errors, setErrors] = useState({})
+  const [showPassword, setShowPassword] = useState(false)
+  const [loginError, setLoginError] = useState('')
 
   // Validate email and password
   const validateForm = () => {
     const newErrors = {}
-
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-    // Validate email
     if (!formData.email.trim()) {
       newErrors.email = 'Email address is required.'
     } else if (!emailPattern.test(formData.email.trim())) {
       newErrors.email = 'Please enter a valid email address.'
     }
 
-    // Validate password
     if (!formData.password) {
       newErrors.password = 'Password is required.'
     } else if (formData.password.length < 8) {
@@ -55,29 +53,28 @@ const [loginError, setLoginError] = useState('')
 
   // Handle form submission
   const handleSubmit = async (event) => {
-  event.preventDefault()
+    event.preventDefault()
 
-  const isValid = validateForm()
+    const isValid = validateForm()
 
-  if (!isValid) {
-    return
+    if (!isValid) {
+      return
+    }
+
+    setLoginError('')
+    setIsLoading(true)
+
+    // Simulate a login request
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    // Simulate an unsuccessful login
+    setLoginError('Invalid email or password. Please try again.')
+    setIsLoading(false)
   }
 
-  setLoginError('')
-  setIsLoading(true)
-
-  // Simulate a login request
-  await new Promise((resolve) => setTimeout(resolve, 1500))
-
-  // Simulate an unsuccessful login
-  setLoginError('Invalid email or password. Please try again.')
-
-  setIsLoading(false)
-}
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
-
         {/* Back to Home */}
         <div className="mb-6 flex justify-start">
           <Link
@@ -125,54 +122,57 @@ const [loginError, setLoginError] = useState('')
 
             {/* Password Field */}
             <div className="relative">
-  <Input
-    label="Password"
-    name="password"
-    type={showPassword ? 'text' : 'password'}
-    placeholder="Enter your password"
-    value={formData.password}
-    onChange={handleChange}
-    error={errors.password}
-    autoComplete="current-password"
-    className="pr-12"
-    required
-  />
+              <Input
+                label="Password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+                autoComplete="current-password"
+                className="pr-12"
+                required
+              />
 
-  <button
-    type="button"
-    onClick={() => setShowPassword((previous) => !previous)}
-    aria-label={showPassword ? 'Hide password' : 'Show password'}
-    className="absolute right-3 top-10 text-text-secondary hover:text-primary"
-  >
-    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-  </button>
-</div>
+              <button
+                type="button"
+                onClick={() => setShowPassword((previous) => !previous)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-3 top-10 text-text-secondary hover:text-primary"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+
             {/* Forgot Password */}
             <div className="flex justify-end">
               <button
                 type="button"
                 className="text-sm font-medium text-primary hover:underline"
               >
-                {loginError && (
-  <div
-    className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-    role="alert"
-  >
-    {loginError}
-  </div>
-)}
                 Forgot password?
               </button>
             </div>
 
+            {/* Login Error */}
+            {loginError && (
+              <div
+                className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                role="alert"
+              >
+                {loginError}
+              </div>
+            )}
+
             {/* Sign In Button */}
             <Button
-  type="submit"
-  className="w-full"
-  disabled={isLoading}
->
-  {isLoading ? 'Signing in...' : 'Sign in'}
-</Button>
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </Button>
           </form>
 
           {/* Register Link */}
