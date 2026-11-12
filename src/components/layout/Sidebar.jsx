@@ -23,11 +23,11 @@ function Sidebar({ role = 'student' }) {
       available: true,
     },
     {
-      name: 'Report an Issue',
-      path: '#',
-      icon: FilePlus,
-      available: false,
-    },
+  name: 'Report an Issue',
+  path: '/student/report',
+  icon: FilePlus,
+  available: true,
+},
     {
       name: 'My Reports',
       path: '#',
