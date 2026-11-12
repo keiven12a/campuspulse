@@ -11,6 +11,7 @@ import CTASection from './components/landing/CTASection.jsx'
 import Login from './pages/auth/Login.jsx'
 import Register from './pages/auth/Register'
 import StudentDashboard from './pages/student/Dashboard.jsx'
+import ReportIssue from './pages/student/ReportIssue.jsx'
 
 function HomePage() {
   return (
@@ -124,7 +125,14 @@ function App() {
           </DashboardPage>
         }
       />
-
+<Route
+  path="/student/report"
+  element={
+    <DashboardPage role="student">
+      <ReportIssue />
+    </DashboardPage>
+  }
+/>
       <Route
         path="/admin/dashboard"
         element={<DashboardPage role="admin" />}
