@@ -14,6 +14,7 @@ import StudentDashboard from './pages/student/Dashboard.jsx'
 import ReportIssue from './pages/student/ReportIssue.jsx'
 import MyReports from './pages/student/MyReports.jsx'
 import ReportDetails from './pages/student/ReportDetails.jsx'
+import ApiTest from './components/common/ApiTest.jsx'
 
 function HomePage() {
   return (
@@ -155,7 +156,14 @@ function App() {
         path="/admin/dashboard"
         element={<DashboardPage role="admin" />}
       />
-
+<Route
+  path="/api-test"
+  element={
+    <DashboardPage role="student">
+      <ApiTest />
+    </DashboardPage>
+  }
+/>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   )
