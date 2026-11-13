@@ -12,6 +12,8 @@ import Login from './pages/auth/Login.jsx'
 import Register from './pages/auth/Register'
 import StudentDashboard from './pages/student/Dashboard.jsx'
 import ReportIssue from './pages/student/ReportIssue.jsx'
+import MyReports from './pages/student/MyReports.jsx'
+import ReportDetails from './pages/student/ReportDetails.jsx'
 
 function HomePage() {
   return (
@@ -130,6 +132,22 @@ function App() {
   element={
     <DashboardPage role="student">
       <ReportIssue />
+    </DashboardPage>
+  }
+/>
+<Route
+  path="/student/reports"
+  element={
+    <DashboardPage role="student">
+      <MyReports />
+    </DashboardPage>
+  }
+/>
+<Route
+  path="/student/reports/:id"
+  element={
+    <DashboardPage role="student">
+      <ReportDetails />
     </DashboardPage>
   }
 />
