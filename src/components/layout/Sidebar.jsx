@@ -29,11 +29,11 @@ function Sidebar({ role = 'student' }) {
   available: true,
 },
     {
-      name: 'My Reports',
-      path: '#',
-      icon: ClipboardList,
-      available: false,
-    },
+  name: 'My Reports',
+  path: '/student/reports',
+  icon: ClipboardList,
+  available: true,
+},
     {
       name: 'Map View',
       path: '#',
