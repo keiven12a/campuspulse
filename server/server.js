@@ -1,13 +1,18 @@
 const express = require('express')
 const cors = require('cors')
 require('dotenv').config()
+
 const connectDB = require('./config/db')
+const authRoutes = require('./routes/authRoutes')
 
 const app = express()
 
 // Middleware
 app.use(cors())
 app.use(express.json())
+
+// Authentication routes
+app.use('/api/auth', authRoutes)
 
 // Health-check API
 app.get('/api/health', (req, res) => {
