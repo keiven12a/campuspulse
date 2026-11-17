@@ -1,6 +1,8 @@
-const jwt = require('jsonwebtoken')
 
-const protect = (req, res, next) => {
+const jwt = require('jsonwebtoken')
+const User = require('../models/User')
+
+const protect = async (req, res, next) => {
   try {
     // Get token from request headers
     const authHeader = req.headers.authorization
@@ -18,11 +20,21 @@ const protect = (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-    // Attach user information to request
-    req.user = decoded
+    // Find the user in the database
+    const user = await User.findById(decoded.userId).select('-password')
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized. User no longer exists.',
+      })
+    }
+
+    // Attach user information to the request
+    req.user = user
 
     next()
-    } catch {
+  } catch {
     return res.status(401).json({
       success: false,
       message: 'Not authorized. Invalid or expired token.',
