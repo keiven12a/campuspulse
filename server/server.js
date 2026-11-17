@@ -4,6 +4,8 @@ require('dotenv').config()
 
 const connectDB = require('./config/db')
 const authRoutes = require('./routes/authRoutes')
+const userRoutes = require('./routes/userRoutes')
+const adminRoutes = require('./routes/adminRoutes')
 
 const app = express()
 
@@ -13,6 +15,12 @@ app.use(express.json())
 
 // Authentication routes
 app.use('/api/auth', authRoutes)
+
+// User routes
+app.use('/api/users', userRoutes)
+
+// Admin routes
+app.use('/api/admin', adminRoutes)
 
 // Health-check API
 app.get('/api/health', (req, res) => {
