@@ -1,12 +1,17 @@
 
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 
 import Input from '../../components/common/Input'
 import Button from '../../components/common/Button'
 
+import { loginUser } from '../../services/authService'
+import { useAuth } from '../../context/useAuth'
+
 function Login() {
+const navigate = useNavigate()
+const { login } = useAuth()
   // Store email and password values
   const [formData, setFormData] = useState({
     email: '',
@@ -51,26 +56,43 @@ function Login() {
     }))
   }
 
-  // Handle form submission
-  const handleSubmit = async (event) => {
-    event.preventDefault()
+ // Handle form submission
+const handleSubmit = async (event) => {
+  event.preventDefault()
 
-    const isValid = validateForm()
+  const isValid = validateForm()
 
-    if (!isValid) {
-      return
+  if (!isValid) {
+    return
+  }
+
+  setLoginError('')
+  setIsLoading(true)
+
+  try {
+    const response = await loginUser({
+      email: formData.email.trim(),
+      password: formData.password,
+    })
+
+    // Store the authenticated user and JWT
+    login(response.user, response.token)
+
+    // Redirect according to the user's role
+    if (response.user.role === 'admin') {
+      navigate('/admin/dashboard')
+    } else {
+      navigate('/student/dashboard')
     }
-
-    setLoginError('')
-    setIsLoading(true)
-
-    // Simulate a login request
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // Simulate an unsuccessful login
-    setLoginError('Invalid email or password. Please try again.')
+  } catch (error) {
+    setLoginError(
+      error.response?.data?.message ||
+      'Login failed. Please check your connection and try again.'
+    )
+  } finally {
     setIsLoading(false)
   }
+}
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
