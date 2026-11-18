@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 
 import Input from '../../components/common/Input'
 import Button from '../../components/common/Button'
+import { registerUser } from '../../services/authService'
 
 function Register() {
   // Store registration form values
@@ -22,6 +23,7 @@ const [isLoading, setIsLoading] = useState(false)
 // Store registration success message
 const [successMessage, setSuccessMessage] = useState('')
 
+  const [serverError, setServerError] = useState('')
   // Handle input changes
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -74,6 +76,7 @@ const handleSubmit = async (event) => {
   event.preventDefault()
 
   setSuccessMessage('')
+  setServerError('')
 
   const isValid = validateForm()
 
@@ -83,16 +86,32 @@ const handleSubmit = async (event) => {
 
   setIsLoading(true)
 
-  // Simulate a registration request
-  await new Promise((resolve) => setTimeout(resolve, 1500))
+  try {
+    const response = await registerUser({
+      name: formData.fullName.trim(),
+      email: formData.email.trim(),
+      password: formData.password,
+    })
 
-  console.log('Registration form is valid:', formData)
+    setSuccessMessage(
+      response.message || 'Registration successful! Your account is ready.'
+    )
 
-  setSuccessMessage(
-    'Registration successful! Your account is ready.'
-  )
-
-  setIsLoading(false)
+    // Clear the form after successful registration
+    setFormData({
+      fullName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    })
+  } catch (error) {
+    setServerError(
+      error.response?.data?.message ||
+      'Registration failed. Please try again.'
+    )
+  } finally {
+    setIsLoading(false)
+  }
 }
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
@@ -185,7 +204,14 @@ const handleSubmit = async (event) => {
     {successMessage}
   </p>
 )}
-
+{serverError && (
+  <p
+    className="text-sm font-medium text-red-600"
+    role="alert"
+  >
+    {serverError}
+  </p>
+)}
             <Button
   type="submit"
   className="w-full"
