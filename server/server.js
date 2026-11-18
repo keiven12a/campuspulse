@@ -6,7 +6,7 @@ const connectDB = require('./config/db')
 const authRoutes = require('./routes/authRoutes')
 const userRoutes = require('./routes/userRoutes')
 const adminRoutes = require('./routes/adminRoutes')
-
+const reportRoutes = require('./routes/reportRoutes')
 const app = express()
 
 // Middleware
@@ -21,7 +21,8 @@ app.use('/api/users', userRoutes)
 
 // Admin routes
 app.use('/api/admin', adminRoutes)
-
+// Report routes
+app.use('/api/reports', reportRoutes)
 // Health-check API
 app.get('/api/health', (req, res) => {
   res.status(200).json({
