@@ -1,10 +1,13 @@
 
 import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
+import { useAuth } from '../../context/useAuth'
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { user, isAuthenticated, logout } = useAuth()
+  const navigate = useNavigate()
 
   const navLinkStyles = ({ isActive }) =>
     `font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${
@@ -14,6 +17,15 @@ function Navbar() {
     }`
 
   const closeMenu = () => setIsMenuOpen(false)
+
+  const handleLogout = () => {
+    logout()
+    closeMenu()
+    navigate('/')
+  }
+
+  const dashboardPath =
+    user?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard'
 
   return (
     <nav
@@ -42,22 +54,40 @@ function Navbar() {
             Home
           </NavLink>
 
-          <NavLink to="/login" className={navLinkStyles}>
-            Login
-          </NavLink>
+          {isAuthenticated ? (
+            <>
+              <NavLink to={dashboardPath} className={navLinkStyles}>
+                Dashboard
+              </NavLink>
 
-          <NavLink
-            to="/register"
-            className={({ isActive }) =>
-              `rounded-lg px-5 py-2.5 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${
-                isActive
-                  ? 'bg-primary-dark'
-                  : 'bg-primary hover:bg-primary-dark'
-              }`
-            }
-          >
-            Register
-          </NavLink>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-lg bg-red-600 px-5 py-2.5 font-semibold text-white transition-colors hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink to="/login" className={navLinkStyles}>
+                Login
+              </NavLink>
+
+              <NavLink
+                to="/register"
+                className={({ isActive }) =>
+                  `rounded-lg px-5 py-2.5 font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${
+                    isActive
+                      ? 'bg-primary-dark'
+                      : 'bg-primary hover:bg-primary-dark'
+                  }`
+                }
+              >
+                Register
+              </NavLink>
+            </>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -91,21 +121,43 @@ function Navbar() {
             Home
           </NavLink>
 
-          <NavLink
-            to="/login"
-            className={navLinkStyles}
-            onClick={closeMenu}
-          >
-            Login
-          </NavLink>
+          {isAuthenticated ? (
+            <>
+              <NavLink
+                to={dashboardPath}
+                className={navLinkStyles}
+                onClick={closeMenu}
+              >
+                Dashboard
+              </NavLink>
 
-          <NavLink
-            to="/register"
-            className="rounded-lg bg-primary px-5 py-3 text-center font-semibold text-white transition-colors duration-200 hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-            onClick={closeMenu}
-          >
-            Register
-          </NavLink>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-lg bg-red-600 px-5 py-3 text-center font-semibold text-white transition-colors hover:bg-red-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink
+                to="/login"
+                className={navLinkStyles}
+                onClick={closeMenu}
+              >
+                Login
+              </NavLink>
+
+              <NavLink
+                to="/register"
+                className="rounded-lg bg-primary px-5 py-3 text-center font-semibold text-white transition-colors duration-200 hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+                onClick={closeMenu}
+              >
+                Register
+              </NavLink>
+            </>
+          )}
         </div>
       )}
     </nav>
