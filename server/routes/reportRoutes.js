@@ -48,7 +48,27 @@ router.post('/', protect, async (req, res) => {
     })
   }
 })
+// Get reports submitted by the authenticated user
+router.get('/my', protect, async (req, res) => {
+  try {
+    const reports = await Report.find({
+      reporter: req.user._id,
+    }).sort({ createdAt: -1 })
 
+    res.status(200).json({
+      success: true,
+      count: reports.length,
+      reports,
+    })
+  } catch (error) {
+    console.error('My reports retrieval error:', error.message)
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve your reports.',
+    })
+  }
+})
 // Get all reports
 router.get('/', protect, async (req, res) => {
   try {
@@ -92,6 +112,16 @@ router.get('/:id', protect, async (req, res) => {
         message: 'Report not found.',
       })
     }
+   // Allow students to view only their own reports
+if (
+  req.user.role !== 'admin' &&
+  report.reporter._id.toString() !== req.user._id.toString()
+) {
+  return res.status(403).json({
+    success: false,
+    message: 'You are not authorized to view this report.',
+  })
+}   
 
     res.status(200).json({
       success: true,
