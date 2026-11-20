@@ -6,6 +6,8 @@ import Textarea from '../../components/common/Textarea.jsx'
 import Button from '../../components/common/Button.jsx'
 import { uploadImage } from '../../services/cloudinaryService'
 import { createReport } from '../../services/reportService'
+import CampusMap from '../../components/maps/CampusMap.jsx'
+import { campusLocations } from '../../components/maps/campusLocations.js'
 
 function ReportIssue() {
   const [formData, setFormData] = useState({
@@ -14,6 +16,9 @@ function ReportIssue() {
     description: '',
     location: '',
   })
+
+  const [coordinates, setCoordinates] = useState(null)
+  const [selectedCampus, setSelectedCampus] = useState('endayesus')
 
   // Image upload states
   const [imageFile, setImageFile] = useState(null)
@@ -99,6 +104,10 @@ function ReportIssue() {
       newErrors.location = 'Please select the campus location.'
     }
 
+    if (!coordinates) {
+      newErrors.coordinates = 'Please select a location on the map.'
+    }
+
     setErrors(newErrors)
 
     return Object.keys(newErrors).length === 0
@@ -112,25 +121,27 @@ function ReportIssue() {
 
     const isValid = validateForm()
 
-    if (!isValid) {
-      return
-    }
+    if (!isValid) return
 
     setIsLoading(true)
 
     try {
       let imageUrl = ''
 
-      // Upload the selected image to Cloudinary
       if (imageFile) {
         imageUrl = await uploadImage(imageFile)
       }
 
-      // Send report details and image URL to the backend
+      const campus = campusLocations.find(
+        (item) => item.id === selectedCampus
+      )
+
       const response = await createReport({
         ...formData,
         title: formData.title.trim(),
         description: formData.description.trim(),
+        location: `${campus.name} - ${formData.location}`,
+        coordinates,
         image: imageUrl,
       })
 
@@ -138,7 +149,6 @@ function ReportIssue() {
         response.message || 'Your report has been submitted successfully!'
       )
 
-      // Reset the form after successful submission
       setFormData({
         title: '',
         category: '',
@@ -146,6 +156,8 @@ function ReportIssue() {
         location: '',
       })
 
+      setCoordinates(null)
+      setSelectedCampus('endayesus')
       setImageFile(null)
       setImagePreview('')
       setImageError('')
@@ -185,7 +197,6 @@ function ReportIssue() {
 
       <Card padding="large">
         <form onSubmit={handleSubmit} className="space-y-6">
-
           <Input
             label="Report Title"
             name="title"
@@ -268,6 +279,73 @@ function ReportIssue() {
             )}
           </div>
 
+          {/* Campus Selection */}
+          <div>
+            <label
+              htmlFor="report-campus"
+              className="mb-2 block text-sm font-medium text-text-primary"
+            >
+              Select Campus
+            </label>
+
+            <select
+              id="report-campus"
+              value={selectedCampus}
+              onChange={(event) => {
+                setSelectedCampus(event.target.value)
+                setCoordinates(null)
+                setErrors((previous) => ({
+                  ...previous,
+                  coordinates: '',
+                }))
+              }}
+              className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-text-primary"
+            >
+              {campusLocations.map((campus) => (
+                <option key={campus.id} value={campus.id}>
+                  {campus.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Geographical Location */}
+          <div>
+            <h3 className="mb-2 text-sm font-medium text-text-primary">
+              Pinpoint the Issue Location
+            </h3>
+
+            <p className="mb-3 text-sm text-text-secondary">
+              Click the map to mark exactly where the problem occurred.
+            </p>
+
+            <CampusMap
+              campusId={selectedCampus}
+              onCampusChange={setSelectedCampus}
+              onLocationSelect={(newCoordinates) => {
+                setCoordinates(newCoordinates)
+                setErrors((previous) => ({
+                  ...previous,
+                  coordinates: '',
+                }))
+              }}
+            />
+
+            {coordinates && (
+              <p className="mt-2 text-sm text-green-700">
+                Selected coordinates: {coordinates[0].toFixed(6)},{' '}
+                {coordinates[1].toFixed(6)}
+              </p>
+            )}
+
+            {errors.coordinates && (
+              <p className="mt-2 text-sm text-red-600" role="alert">
+                {errors.coordinates}
+              </p>
+            )}
+          </div>
+
+          {/* Image Upload */}
           <div>
             <label
               htmlFor="report-image"
