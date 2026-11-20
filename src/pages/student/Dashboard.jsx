@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from 'react'
 import {
   FileText,
   Clock,
@@ -9,60 +10,58 @@ import {
 } from 'lucide-react'
 import Card from '../../components/common/Card.jsx'
 import Badge from '../../components/common/Badge.jsx'
+import CampusMap from '../../components/maps/CampusMap.jsx'
+import { getMyReports } from '../../services/reportService'
+import { useAuth } from '../../context/useAuth'
 
 function Dashboard() {
+ const { user } = useAuth() 
+  const [reports, setReports] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    async function fetchReports() {
+      try {
+        const response = await getMyReports()
+        setReports(response.reports || [])
+      } catch (error) {
+        setError(
+          error.response?.data?.message ||
+          'Unable to load your reports.'
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchReports()
+  }, [])
+
   const summaryCards = [
     {
       title: 'Total Reports',
-      count: 12,
+      count: reports.length,
       description: 'All submitted reports',
       icon: FileText,
     },
     {
       title: 'Pending',
-      count: 4,
+      count: reports.filter((report) => report.status === 'pending').length,
       description: 'Awaiting review',
       icon: Clock,
     },
     {
       title: 'In Progress',
-      count: 5,
+      count: reports.filter((report) => report.status === 'in-progress').length,
       description: 'Currently being addressed',
       icon: RefreshCw,
     },
     {
       title: 'Resolved',
-      count: 3,
+      count: reports.filter((report) => report.status === 'resolved').length,
       description: 'Successfully resolved',
       icon: CheckCircle,
-    },
-  ]
-
-  // Recent Reports Sample Data
-  const recentReports = [
-    {
-      id: 1,
-      title: 'Broken Streetlight',
-      category: 'Electrical',
-      location: 'Main Campus, Block A',
-      date: 'November 8, 2026',
-      status: 'pending',
-    },
-    {
-      id: 2,
-      title: 'Overflowing Waste Bin',
-      category: 'Waste Management',
-      location: 'Student Cafeteria',
-      date: 'November 7, 2026',
-      status: 'in-progress',
-    },
-    {
-      id: 3,
-      title: 'Damaged Walkway',
-      category: 'Infrastructure',
-      location: 'Library Entrance',
-      date: 'November 5, 2026',
-      status: 'resolved',
     },
   ]
 
@@ -75,7 +74,7 @@ function Dashboard() {
         </p>
 
         <h1 className="mt-2 text-3xl font-bold text-text-primary">
-          Welcome back, Student!
+          Welcome back, {user?.name?.trim().split(/\s+/)[0] || 'Student'}!
         </h1>
 
         <p className="mt-2 text-text-secondary">
@@ -106,7 +105,7 @@ function Dashboard() {
                 </div>
 
                 <p className="mt-4 text-3xl font-bold text-text-primary">
-                  {item.count}
+                  {isLoading ? '...' : item.count}
                 </p>
 
                 <p className="mt-1 text-sm text-text-secondary">
@@ -118,60 +117,88 @@ function Dashboard() {
         </div>
       </section>
 
+      {/* Campus Map Section */}
+      <section>
+        <h2 className="mb-2 text-xl font-semibold text-text-primary">
+          Campus Map
+        </h2>
+
+        <p className="mb-4 text-sm text-text-secondary">
+          View the geographical locations of your submitted campus reports.
+        </p>
+
+        <Card padding="medium">
+          <CampusMap reports={reports} />
+        </Card>
+      </section>
+
       {/* Recent Reports Section */}
       <section>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-semibold text-text-primary">
-              Recent Reports
-            </h2>
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-text-primary">
+            Recent Reports
+          </h2>
 
-            <p className="mt-1 text-sm text-text-secondary">
-              Keep track of your latest campus reports.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            className="text-sm font-semibold text-primary hover:underline"
-          >
-            View All
-          </button>
+          <p className="mt-1 text-sm text-text-secondary">
+            Keep track of your latest campus reports.
+          </p>
         </div>
 
-        <div className="space-y-4">
-          {recentReports.map((report) => (
-            <Card key={report.id} padding="medium">
-              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-text-primary">
-                    {report.title}
-                  </h3>
+        {isLoading && (
+          <p className="text-sm text-text-secondary">
+            Loading your reports...
+          </p>
+        )}
 
-                  <p className="mt-1 text-sm text-text-secondary">
-                    {report.category}
-                  </p>
+        {error && (
+          <p className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </p>
+        )}
 
-                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-text-secondary">
-                    <span className="flex items-center gap-1">
-                      <MapPin size={14} />
-                      {report.location}
-                    </span>
+        {!isLoading && !error && reports.length === 0 && (
+          <Card padding="medium">
+            <p className="text-sm text-text-secondary">
+              You haven't submitted any reports yet.
+            </p>
+          </Card>
+        )}
 
-                    <span className="flex items-center gap-1">
-                      <CalendarDays size={14} />
-                      {report.date}
-                    </span>
+        {!isLoading && !error && (
+          <div className="space-y-4">
+            {reports.slice(0, 3).map((report) => (
+              <Card key={report._id} padding="medium">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-text-primary">
+                      {report.title}
+                    </h3>
+
+                    <p className="mt-1 text-sm text-text-secondary">
+                      {report.category}
+                    </p>
+
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-text-secondary">
+                      <span className="flex items-center gap-1">
+                        <MapPin size={14} />
+                        {report.location}
+                      </span>
+
+                      <span className="flex items-center gap-1">
+                        <CalendarDays size={14} />
+                        {new Date(report.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0">
+                    <Badge status={report.status} />
                   </div>
                 </div>
-
-                <div className="shrink-0">
-                  <Badge status={report.status} />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   )
