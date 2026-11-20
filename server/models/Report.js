@@ -36,6 +36,24 @@ const reportSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    coordinates: {
+  type: [Number],
+  default: undefined,
+  validate: {
+    validator: function (value) {
+      return (
+        value === undefined ||
+        (value.length === 2 &&
+          value.every((coordinate) => Number.isFinite(coordinate)) &&
+          value[0] >= -90 &&
+          value[0] <= 90 &&
+          value[1] >= -180 &&
+          value[1] <= 180)
+      )
+    },
+    message: 'Coordinates must contain a valid latitude and longitude.',
+  },
+},
 
     image: {
       type: String,
