@@ -10,23 +10,24 @@ const router = express.Router()
 router.post('/', protect, async (req, res) => {
   try {
     const {
-      title,
-      description,
-      category,
-      location,
-      image,
-    } = req.body
+  title,
+  description,
+  category,
+  location,
+  coordinates,
+  image,
+} = req.body
 
     // Create report using the authenticated user
     const report = await Report.create({
-      title,
-      description,
-      category,
-      location,
-      image,
-      reporter: req.user._id,
-    })
-
+  title,
+  description,
+  category,
+  location,
+  coordinates,
+  image,
+  reporter: req.user._id,
+})
     res.status(201).json({
       success: true,
       message: 'Report submitted successfully!',
