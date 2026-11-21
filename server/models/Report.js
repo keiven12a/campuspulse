@@ -71,6 +71,12 @@ const reportSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+   supporters: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
   },
   {
     timestamps: true,
