@@ -6,6 +6,7 @@ import {
   MapPin,
   CalendarDays,
   ThumbsUp,
+  History,
 } from 'lucide-react'
 
 import Card from '../../components/common/Card.jsx'
@@ -208,7 +209,52 @@ function ReportDetails() {
             </p>
           )}
         </div>
+        {/* Report status timeline */}
+        <div className="border-t border-border pt-5">
+          <div className="mb-4 flex items-center gap-2">
+            <History size={18} className="text-primary" />
 
+            <h3 className="text-sm font-semibold text-text-primary">
+              Status Timeline
+            </h3>
+          </div>
+
+          {report.statusHistory?.length > 0 ? (
+            <div className="space-y-4">
+              {report.statusHistory.map((entry, index) => (
+                <div key={entry._id || index} className="flex gap-3">
+                  <div className="flex flex-col items-center">
+                    <div className="h-3 w-3 rounded-full bg-primary" />
+
+                    {index !== report.statusHistory.length - 1 && (
+                      <div className="mt-1 min-h-8 w-px bg-border" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 pb-2">
+                    <p className="text-sm font-semibold capitalize text-text-primary">
+                      {entry.status.replace('-', ' ')}
+                    </p>
+
+                    {entry.note && (
+                      <p className="mt-1 text-sm text-text-secondary">
+                        {entry.note}
+                      </p>
+                    )}
+
+                    <p className="mt-1 text-xs text-text-secondary">
+                      {new Date(entry.changedAt).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-text-secondary">
+              No status history recorded yet.
+            </p>
+          )}
+        </div>
         <div className="grid grid-cols-1 gap-4 border-t border-border pt-5 sm:grid-cols-2">
           <div className="flex items-start gap-3">
             <MapPin size={18} className="mt-1 text-primary" />
