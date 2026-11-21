@@ -1,19 +1,32 @@
 
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { MapPin, CalendarDays, ArrowRight } from 'lucide-react'
+import {
+  MapPin,
+  CalendarDays,
+  ArrowRight,
+  ThumbsUp,
+} from 'lucide-react'
 
 import Card from '../../components/common/Card.jsx'
 import Badge from '../../components/common/Badge.jsx'
-import { getMyReports } from '../../services/reportService'
+import {
+  getMyReports,
+  toggleReportSupport,
+} from '../../services/reportService'
+import { useAuth } from '../../context/useAuth'
 
 function MyReports() {
+  const { user } = useAuth()
+
   const [reports, setReports] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('all')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [supportingReportId, setSupportingReportId] = useState(null)
+  const [supportError, setSupportError] = useState('')
 
   // Fetch the logged-in student's reports from MongoDB
   useEffect(() => {
@@ -36,6 +49,29 @@ function MyReports() {
 
     fetchReports()
   }, [])
+
+  // Toggle support for a report
+  async function handleSupport(reportId) {
+    try {
+      setSupportingReportId(reportId)
+      setSupportError('')
+
+      const response = await toggleReportSupport(reportId)
+
+      setReports((previousReports) =>
+        previousReports.map((report) =>
+          report._id === reportId ? response.report : report
+        )
+      )
+    } catch (error) {
+      setSupportError(
+        error.response?.data?.message ||
+        'Failed to update report support.'
+      )
+    } finally {
+      setSupportingReportId(null)
+    }
+  }
 
   // Search and filter reports
   const filteredReports = reports.filter((report) => {
@@ -73,7 +109,6 @@ function MyReports() {
 
       {/* Search and filters */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        {/* Search input */}
         <input
           type="text"
           value={searchTerm}
@@ -82,7 +117,6 @@ function MyReports() {
           className="rounded-lg border border-border bg-surface px-4 py-3 text-sm text-text-primary outline-none focus:border-primary"
         />
 
-        {/* Status filter */}
         <select
           value={selectedStatus}
           onChange={(event) => setSelectedStatus(event.target.value)}
@@ -95,7 +129,6 @@ function MyReports() {
           <option value="rejected">Rejected</option>
         </select>
 
-        {/* Category filter */}
         <select
           value={selectedCategory}
           onChange={(event) => setSelectedCategory(event.target.value)}
@@ -133,53 +166,86 @@ function MyReports() {
       {!isLoading && !error && (
         filteredReports.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            {filteredReports.map((report) => (
-              <Card key={report._id} className="flex flex-col gap-4">
-                {/* Report title and status */}
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-lg font-semibold text-text-primary">
-                      {report.title}
-                    </h2>
+            {filteredReports.map((report) => {
+              const hasSupported = report.supporters?.some(
+                (supporter) =>
+                  (typeof supporter === 'string'
+                    ? supporter
+                    : supporter._id) === user?._id
+              ) || false
 
-                    <span className="mt-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                      {report.category}
+              const supportCount = report.supporters?.length || 0
+
+              return (
+                <Card key={report._id} className="flex flex-col gap-4">
+                  {/* Report title and status */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h2 className="text-lg font-semibold text-text-primary">
+                        {report.title}
+                      </h2>
+
+                      <span className="mt-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                        {report.category}
+                      </span>
+                    </div>
+
+                    <Badge status={report.status} />
+                  </div>
+
+                  {/* Report description */}
+                  <p className="text-sm leading-6 text-text-secondary">
+                    {report.description}
+                  </p>
+
+                  {/* Location and date */}
+                  <div className="flex flex-wrap gap-4 text-xs text-text-secondary">
+                    <span className="flex items-center gap-2">
+                      <MapPin size={15} />
+                      {report.location}
+                    </span>
+
+                    <span className="flex items-center gap-2">
+                      <CalendarDays size={15} />
+                      {formatDate(report.createdAt)}
                     </span>
                   </div>
 
-                  <Badge status={report.status} />
-                </div>
+                  {/* Support and details */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+                    <button
+                      type="button"
+                      onClick={() => handleSupport(report._id)}
+                      disabled={supportingReportId === report._id}
+                      aria-pressed={hasSupported}
+                      className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                        hasSupported
+                          ? 'bg-primary text-white'
+                          : 'border border-border text-text-primary hover:bg-primary/10'
+                      }`}
+                    >
+                      <ThumbsUp size={16} />
 
-                {/* Report description */}
-                <p className="text-sm leading-6 text-text-secondary">
-                  {report.description}
-                </p>
+                      {supportingReportId === report._id
+                        ? 'Updating...'
+                        : hasSupported
+                          ? 'Supported'
+                          : 'Support'}
 
-                {/* Location and date */}
-                <div className="flex flex-wrap gap-4 text-xs text-text-secondary">
-                  <span className="flex items-center gap-2">
-                    <MapPin size={15} />
-                    {report.location}
-                  </span>
+                      <span>({supportCount})</span>
+                    </button>
 
-                  <span className="flex items-center gap-2">
-                    <CalendarDays size={15} />
-                    {formatDate(report.createdAt)}
-                  </span>
-                </div>
-
-                {/* Details link */}
-                <div className="border-t border-border pt-3">
-                  <Link
-                    to={`/student/reports/${report._id}`}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
-                  >
-                    View Details
-                    <ArrowRight size={16} />
-                  </Link>
-                </div>
-              </Card>
-            ))}
+                    <Link
+                      to={`/student/reports/${report._id}`}
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+                    >
+                      View Details
+                      <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                </Card>
+              )
+            })}
           </div>
         ) : (
           <Card className="py-10 text-center">
@@ -192,6 +258,12 @@ function MyReports() {
             </p>
           </Card>
         )
+      )}
+
+      {supportError && (
+        <p className="text-sm text-red-600" role="alert">
+          {supportError}
+        </p>
       )}
     </div>
   )
