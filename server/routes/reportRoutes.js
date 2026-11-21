@@ -92,6 +92,67 @@ router.get('/', protect, async (req, res) => {
   }
 })
 
+// Toggle support for a report
+router.patch('/:id/support', protect, async (req, res) => {
+  try {
+    const { id } = req.params
+    const userId = req.user._id
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid report ID.',
+      })
+    }
+
+    const report = await Report.findById(id)
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: 'Report not found.',
+      })
+    }
+
+    const alreadySupported = report.supporters.some(
+      (supporterId) => supporterId.toString() === userId.toString()
+    )
+
+    const updatedReport = await Report.findOneAndUpdate(
+      {
+        _id: id,
+        supporters: alreadySupported ? userId : { $ne: userId },
+      },
+      alreadySupported
+        ? { $pull: { supporters: userId } }
+        : { $addToSet: { supporters: userId } },
+      { new: true }
+    )
+
+    if (!updatedReport) {
+      return res.status(409).json({
+        success: false,
+        message: 'Your support status changed. Please try again.',
+      })
+    }
+
+    res.status(200).json({
+      success: true,
+      message: alreadySupported
+        ? 'Support removed successfully.'
+        : 'Report supported successfully.',
+      supportCount: updatedReport.supporters.length,
+      report: updatedReport,
+    })
+  } catch (error) {
+    console.error('Report support error:', error.message)
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update report support.',
+    })
+  }
+})
 // Get a single report by ID
 router.get('/:id', protect, async (req, res) => {
   try {
