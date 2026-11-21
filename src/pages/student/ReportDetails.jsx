@@ -1,18 +1,28 @@
 
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, MapPin, CalendarDays } from 'lucide-react'
+import {
+  ArrowLeft,
+  MapPin,
+  CalendarDays,
+  ThumbsUp,
+} from 'lucide-react'
 
 import Card from '../../components/common/Card.jsx'
 import Badge from '../../components/common/Badge.jsx'
 import api from '../../services/api'
+import { toggleReportSupport } from '../../services/reportService'
+import { useAuth } from '../../context/useAuth'
 
 function ReportDetails() {
   const { id } = useParams()
+  const { user } = useAuth()
 
   const [report, setReport] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isSupporting, setIsSupporting] = useState(false)
+  const [supportError, setSupportError] = useState('')
 
   // Fetch the selected report from MongoDB
   useEffect(() => {
@@ -35,6 +45,31 @@ function ReportDetails() {
 
     fetchReport()
   }, [id])
+
+  // Check whether the logged-in student supports this report
+  const hasSupported = report?.supporters?.some(
+    (supporter) =>
+      (typeof supporter === 'string' ? supporter : supporter._id) === user?._id
+  ) || false
+
+  const supportCount = report?.supporters?.length || 0
+
+  async function handleSupport() {
+    try {
+      setIsSupporting(true)
+      setSupportError('')
+
+      const response = await toggleReportSupport(id)
+      setReport(response.report)
+    } catch (error) {
+      setSupportError(
+        error.response?.data?.message ||
+        'Failed to update report support.'
+      )
+    } finally {
+      setIsSupporting(false)
+    }
+  }
 
   function formatDate(date) {
     return new Date(date).toLocaleDateString()
@@ -134,6 +169,45 @@ function ReportDetails() {
             />
           </div>
         )}
+
+        <div className="flex flex-col gap-3 border-t border-border pt-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-text-primary">
+                Support this report
+              </p>
+
+              <p className="mt-1 text-xs text-text-secondary">
+                {supportCount} {supportCount === 1 ? 'person' : 'people'} supporting
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSupport}
+              disabled={isSupporting}
+              aria-pressed={hasSupported}
+              className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                hasSupported
+                  ? 'bg-primary text-white'
+                  : 'border border-border text-text-primary hover:bg-primary/10'
+              }`}
+            >
+              <ThumbsUp size={16} />
+              {isSupporting
+                ? 'Updating...'
+                : hasSupported
+                  ? 'Supported'
+                  : 'Support'}
+            </button>
+          </div>
+
+          {supportError && (
+            <p className="text-sm text-red-600" role="alert">
+              {supportError}
+            </p>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 gap-4 border-t border-border pt-5 sm:grid-cols-2">
           <div className="flex items-start gap-3">
