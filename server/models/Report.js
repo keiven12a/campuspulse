@@ -60,12 +60,35 @@ const reportSchema = new mongoose.Schema(
       default: '',
     },
 
-    status: {
+        status: {
       type: String,
       enum: ['pending', 'in-progress', 'resolved', 'rejected'],
       default: 'pending',
     },
 
+    statusHistory: [
+      {
+        status: {
+          type: String,
+          enum: ['pending', 'in-progress', 'resolved', 'rejected'],
+          required: true,
+        },
+        changedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
+        note: {
+          type: String,
+          trim: true,
+          default: '',
+        },
+        changedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     reporter: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
