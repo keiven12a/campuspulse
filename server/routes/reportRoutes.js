@@ -19,7 +19,7 @@ router.post('/', protect, async (req, res) => {
 } = req.body
 
     // Create report using the authenticated user
-    const report = await Report.create({
+   const report = await Report.create({
   title,
   description,
   category,
@@ -27,6 +27,14 @@ router.post('/', protect, async (req, res) => {
   coordinates,
   image,
   reporter: req.user._id,
+  status: 'pending',
+  statusHistory: [
+    {
+      status: 'pending',
+      changedBy: req.user._id,
+      note: 'Report submitted',
+    },
+  ],
 })
     res.status(201).json({
       success: true,
