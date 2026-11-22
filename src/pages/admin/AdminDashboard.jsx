@@ -7,7 +7,9 @@ import {
   Activity,
   CalendarDays,
   User,
+  Eye,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import Card from '../../components/common/Card.jsx'
 import Badge from '../../components/common/Badge.jsx'
 import api from '../../services/api'
@@ -72,7 +74,6 @@ function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Dashboard heading */}
       <section>
         <p className="text-sm font-medium text-primary">
           Administration
@@ -87,7 +88,6 @@ function AdminDashboard() {
         </p>
       </section>
 
-      {/* Dashboard statistics */}
       <section>
         <h2 className="mb-4 text-xl font-semibold text-text-primary">
           Reports Overview
@@ -128,7 +128,6 @@ function AdminDashboard() {
         </div>
       </section>
 
-      {/* Recent reports */}
       <section>
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-text-primary">
@@ -183,8 +182,16 @@ function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="shrink-0">
+                  <div className="flex shrink-0 items-center gap-3">
                     <Badge status={report.status} />
+
+                    <Link
+                      to={`/admin/reports/${report._id}`}
+                      className="inline-flex items-center gap-2 rounded-lg border border-primary px-3 py-2 text-sm font-medium text-primary transition hover:bg-primary hover:text-white"
+                    >
+                      <Eye size={16} />
+                      View Details
+                    </Link>
                   </div>
                 </div>
               </Card>
