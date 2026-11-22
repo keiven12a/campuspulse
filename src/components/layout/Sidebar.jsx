@@ -56,11 +56,11 @@ function Sidebar({ role = 'student' }) {
       available: true,
     },
     {
-      name: 'Manage Reports',
-      path: '#',
-      icon: FolderKanban,
-      available: false,
-    },
+  name: 'Manage Reports',
+  path: '/admin/reports',
+  icon: FolderKanban,
+  available: true,
+},
     {
       name: 'Map View',
       path: '#',
