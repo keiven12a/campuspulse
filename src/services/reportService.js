@@ -21,3 +21,26 @@ export const toggleReportSupport = async (reportId) => {
 
   return response.data
 }
+// Retrieve all reports for administrator management
+export const getAllReports = async () => {
+  const response = await api.get('/admin/reports')
+
+  return response.data
+}
+
+// Retrieve a single report for administrator inspection
+export const getAdminReportById = async (reportId) => {
+  const response = await api.get(`/admin/reports/${reportId}`)
+
+  return response.data
+}
+
+// Update report status and add an administrator note
+export const updateReportStatus = async (reportId, status, note = '') => {
+  const response = await api.patch(`/admin/reports/${reportId}/status`, {
+    status,
+    note,
+  })
+
+  return response.data
+}
