@@ -14,6 +14,7 @@ import StudentDashboard from './pages/student/Dashboard.jsx'
 import ReportIssue from './pages/student/ReportIssue.jsx'
 import MyReports from './pages/student/MyReports.jsx'
 import ReportDetails from './pages/student/ReportDetails.jsx'
+import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 
 function HomePage() {
   return (
@@ -152,9 +153,13 @@ function App() {
   }
 />
       <Route
-        path="/admin/dashboard"
-        element={<DashboardPage role="admin" />}
-      />
+  path="/admin/dashboard"
+  element={
+    <DashboardPage role="admin">
+      <AdminDashboard />
+    </DashboardPage>
+  }
+/>
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
