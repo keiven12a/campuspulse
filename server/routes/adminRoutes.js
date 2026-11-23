@@ -13,12 +13,16 @@ router.get('/dashboard', protect, authorize('admin'), async (req, res) => {
     const [
       totalReports,
       pendingReports,
+      inProgressReports,
       resolvedReports,
+      rejectedReports,
       recentReports,
     ] = await Promise.all([
       Report.countDocuments(),
       Report.countDocuments({ status: 'pending' }),
+      Report.countDocuments({ status: 'in-progress' }),
       Report.countDocuments({ status: 'resolved' }),
+      Report.countDocuments({ status: 'rejected' }),
       Report.find()
         .populate('reporter', 'name email')
         .sort({ createdAt: -1 })
@@ -30,7 +34,9 @@ router.get('/dashboard', protect, authorize('admin'), async (req, res) => {
       statistics: {
         totalReports,
         pendingReports,
+        inProgressReports,
         resolvedReports,
+        rejectedReports,
       },
       recentReports,
     })
@@ -118,14 +124,14 @@ router.patch(
         })
       }
 
-      const allowedStatuses = [
-        'pending',
-        'in-progress',
-        'resolved',
-        'rejected',
-      ]
+      const allowedTransitions = {
+        pending: ['in-progress', 'rejected'],
+        'in-progress': ['resolved', 'rejected'],
+        resolved: ['in-progress'],
+        rejected: ['pending'],
+      }
 
-      if (!allowedStatuses.includes(status)) {
+      if (!Object.keys(allowedTransitions).includes(status)) {
         return res.status(400).json({
           success: false,
           message: 'Invalid report status.',
@@ -138,6 +144,15 @@ router.patch(
         return res.status(404).json({
           success: false,
           message: 'Report not found.',
+        })
+      }
+
+      const currentStatus = report.status
+
+      if (!allowedTransitions[currentStatus]?.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot change report status from ${currentStatus} to ${status}.`,
         })
       }
 
