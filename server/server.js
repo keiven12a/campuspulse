@@ -10,6 +10,7 @@ const authRoutes = require('./routes/authRoutes')
 const userRoutes = require('./routes/userRoutes')
 const adminRoutes = require('./routes/adminRoutes')
 const reportRoutes = require('./routes/reportRoutes')
+const notificationRoutes = require('./routes/notificationRoutes')
 const app = express()
 
 // Middleware
@@ -26,6 +27,8 @@ app.use('/api/users', userRoutes)
 app.use('/api/admin', adminRoutes)
 // Report routes
 app.use('/api/reports', reportRoutes)
+// Notification routes
+app.use('/api/notifications', notificationRoutes)
 // Health-check API
 app.get('/api/health', (req, res) => {
   res.status(200).json({
