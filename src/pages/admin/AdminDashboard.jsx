@@ -5,9 +5,10 @@ import {
   Clock,
   CheckCircle,
   Activity,
-  CalendarDays,
+  XCircle,
   User,
   Eye,
+  LoaderCircle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Card from '../../components/common/Card.jsx'
@@ -18,7 +19,9 @@ function AdminDashboard() {
   const [statistics, setStatistics] = useState({
     totalReports: 0,
     pendingReports: 0,
+    inProgressReports: 0,
     resolvedReports: 0,
+    rejectedReports: 0,
   })
 
   const [recentReports, setRecentReports] = useState([])
@@ -35,7 +38,7 @@ function AdminDashboard() {
       } catch (error) {
         setError(
           error.response?.data?.message ||
-          'Unable to load administrator dashboard data.'
+            'Unable to load administrator dashboard data.'
         )
       } finally {
         setIsLoading(false)
@@ -59,16 +62,22 @@ function AdminDashboard() {
       icon: Clock,
     },
     {
+      title: 'In Progress',
+      count: statistics.inProgressReports,
+      description: 'Currently being investigated',
+      icon: Activity,
+    },
+    {
       title: 'Resolved Reports',
       count: statistics.resolvedReports,
       description: 'Successfully resolved reports',
       icon: CheckCircle,
     },
     {
-      title: 'Recent Reports',
-      count: recentReports.length,
-      description: 'Latest five submissions',
-      icon: Activity,
+      title: 'Rejected Reports',
+      count: statistics.rejectedReports,
+      description: 'Reports rejected after review',
+      icon: XCircle,
     },
   ]
 
@@ -99,14 +108,14 @@ function AdminDashboard() {
           </p>
         )}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {summaryCards.map((item) => {
             const Icon = item.icon
 
             return (
               <Card key={item.title} padding="medium">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-text-secondary">
+                  <p className="text-xs font-medium text-text-secondary">
                     {item.title}
                   </p>
 
@@ -115,11 +124,11 @@ function AdminDashboard() {
                   </div>
                 </div>
 
-                <p className="mt-4 text-3xl font-bold text-text-primary">
+               <p className="mt-3 text-2xl font-bold text-text-primary">
                   {isLoading ? '...' : item.count}
                 </p>
 
-                <p className="mt-1 text-sm text-text-secondary">
+               <p className="mt-1 text-xs text-text-secondary">
                   {item.description}
                 </p>
               </Card>
@@ -141,9 +150,10 @@ function AdminDashboard() {
 
         {isLoading && (
           <Card padding="medium">
-            <p className="text-sm text-text-secondary">
+            <div className="flex items-center gap-2 text-sm text-text-secondary">
+              <LoaderCircle size={16} className="animate-spin" />
               Loading recent reports...
-            </p>
+            </div>
           </Card>
         )}
 
@@ -175,8 +185,7 @@ function AdminDashboard() {
                         {report.reporter?.name || 'Unknown reporter'}
                       </span>
 
-                      <span className="flex items-center gap-1">
-                        <CalendarDays size={14} />
+                      <span>
                         {new Date(report.createdAt).toLocaleDateString()}
                       </span>
                     </div>
