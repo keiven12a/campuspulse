@@ -3,7 +3,7 @@ const express = require('express')
 const Report = require('../models/Report')
 const protect = require('../middleware/authMiddleware')
 const authorize = require('../middleware/roleMiddleware')
-
+const Notification = require('../models/Notification')
 const router = express.Router()
 const mongoose = require('mongoose')
 
@@ -108,6 +108,7 @@ router.get('/reports/:id', protect, authorize('admin'), async (req, res) => {
 })
 
  // Update report status and record administrator notes
+
 router.patch(
   '/reports/:id/status',
   protect,
@@ -158,14 +159,22 @@ router.patch(
 
       report.status = status
 
-      report.statusHistory.push({
-        status,
-        changedBy: req.user._id,
-        note: typeof note === 'string' ? note.trim() : '',
-        changedAt: new Date(),
-      })
+report.statusHistory.push({
+  status,
+  changedBy: req.user._id,
+  note: typeof note === 'string' ? note.trim() : '',
+  changedAt: new Date(),
+})
 
-      await report.save()
+await report.save()
+
+await Notification.create({
+  recipient: report.reporter,
+  report: report._id,
+  type: 'status-update',
+  title: 'Report Status Updated',
+  message: `Your report "${report.title}" has been updated to ${status}.`,
+})
 
       res.status(200).json({
         success: true,
