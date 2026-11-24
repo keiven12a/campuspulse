@@ -23,7 +23,6 @@ function Navbar() {
 
   const handleLogout = () => {
     logout()
-    setUnreadCount(0)
     closeMenu()
     navigate('/')
   }
@@ -31,10 +30,18 @@ function Navbar() {
   const dashboardPath =
     user?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard'
 
+  const notificationsPath =
+    user?.role === 'admin'
+      ? '/admin/notifications'
+      : '/student/notifications'
+
   useEffect(() => {
-  if (!isAuthenticated || user?.role !== 'student') {
-    return
-  }
+    if (
+  !isAuthenticated ||
+  !['student', 'admin'].includes(user?.role)
+) {
+  return
+}
 
     let isMounted = true
 
@@ -93,9 +100,9 @@ function Navbar() {
                 Dashboard
               </NavLink>
 
-              {user?.role === 'student' && (
+              {(user?.role === 'student' || user?.role === 'admin') && (
                 <Link
-                  to="/student/notifications"
+                  to={notificationsPath}
                   aria-label={`Notifications, ${unreadCount} unread`}
                   className="relative rounded-lg p-2 text-text-secondary transition-colors hover:bg-background hover:text-primary"
                 >
@@ -180,20 +187,22 @@ function Navbar() {
                 Dashboard
               </NavLink>
 
-              {user?.role === 'student' && (
+              {(user?.role === 'student' || user?.role === 'admin') && (
                 <Link
-                  to="/student/notifications"
+                  to={notificationsPath}
                   onClick={closeMenu}
                   className="flex items-center gap-3 font-medium text-text-secondary hover:text-primary"
                 >
                   <span className="relative">
                     <Bell size={21} />
+
                     {unreadCount > 0 && (
                       <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
                         {unreadCount > 99 ? '99+' : unreadCount}
                       </span>
                     )}
                   </span>
+
                   Notifications
                   {unreadCount > 0 && ` (${unreadCount} unread)`}
                 </Link>
