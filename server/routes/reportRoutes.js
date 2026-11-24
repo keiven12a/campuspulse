@@ -2,6 +2,8 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const Report = require('../models/Report')
+const User = require('../models/User')
+const Notification = require('../models/Notification')
 const protect = require('../middleware/authMiddleware')
 
 const router = express.Router()
@@ -10,32 +12,49 @@ const router = express.Router()
 router.post('/', protect, async (req, res) => {
   try {
     const {
-  title,
-  description,
-  category,
-  location,
-  coordinates,
-  image,
-} = req.body
+      title,
+      description,
+      category,
+      location,
+      coordinates,
+      image,
+    } = req.body
 
     // Create report using the authenticated user
-   const report = await Report.create({
-  title,
-  description,
-  category,
-  location,
-  coordinates,
-  image,
-  reporter: req.user._id,
-  status: 'pending',
-  statusHistory: [
-    {
+    const report = await Report.create({
+      title,
+      description,
+      category,
+      location,
+      coordinates,
+      image,
+      reporter: req.user._id,
       status: 'pending',
-      changedBy: req.user._id,
-      note: 'Report submitted',
-    },
-  ],
-})
+      statusHistory: [
+        {
+          status: 'pending',
+          changedBy: req.user._id,
+          note: 'Report submitted',
+        },
+      ],
+    })
+
+    // Find all administrators
+    const admins = await User.find({ role: 'admin' }).select('_id')
+
+    // Create a notification for each administrator
+    if (admins.length > 0) {
+      await Notification.insertMany(
+        admins.map((admin) => ({
+          recipient: admin._id,
+          report: report._id,
+          type: 'new-report',
+          title: 'New Report Submitted',
+          message: `A new report "${report.title}" has been submitted.`,
+        }))
+      )
+    }
+
     res.status(201).json({
       success: true,
       message: 'Report submitted successfully!',
@@ -57,6 +76,7 @@ router.post('/', protect, async (req, res) => {
     })
   }
 })
+
 // Get reports submitted by the authenticated user
 router.get('/my', protect, async (req, res) => {
   try {
@@ -78,6 +98,7 @@ router.get('/my', protect, async (req, res) => {
     })
   }
 })
+
 // Get all reports
 router.get('/', protect, async (req, res) => {
   try {
@@ -161,6 +182,7 @@ router.patch('/:id/support', protect, async (req, res) => {
     })
   }
 })
+
 // Get a single report by ID
 router.get('/:id', protect, async (req, res) => {
   try {
@@ -182,16 +204,17 @@ router.get('/:id', protect, async (req, res) => {
         message: 'Report not found.',
       })
     }
-   // Allow students to view only their own reports
-if (
-  req.user.role !== 'admin' &&
-  report.reporter._id.toString() !== req.user._id.toString()
-) {
-  return res.status(403).json({
-    success: false,
-    message: 'You are not authorized to view this report.',
-  })
-}   
+
+    // Allow students to view only their own reports
+    if (
+      req.user.role !== 'admin' &&
+      report.reporter._id.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not authorized to view this report.',
+      })
+    }
 
     res.status(200).json({
       success: true,
