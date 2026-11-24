@@ -163,6 +163,16 @@ function App() {
     </DashboardPage>
   }
 />
+
+<Route
+  path="/admin/notifications"
+  element={
+    <DashboardPage role="admin">
+      <Notifications />
+    </DashboardPage>
+  }
+/>
+
       <Route
   path="/admin/dashboard"
   element={
