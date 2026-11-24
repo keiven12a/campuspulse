@@ -17,6 +17,7 @@ import ReportDetails from './pages/student/ReportDetails.jsx'
 import AdminDashboard from './pages/admin/AdminDashboard.jsx'
 import ManageReports from './pages/admin/ManageReports.jsx'
 import AdminReportDetails from './pages/admin/AdminReportDetails.jsx'
+import Notifications from './pages/student/Notifications.jsx'
 
 function HomePage() {
   return (
@@ -151,6 +152,14 @@ function App() {
   element={
     <DashboardPage role="student">
       <ReportDetails />
+    </DashboardPage>
+  }
+/>
+<Route
+  path="/student/notifications"
+  element={
+    <DashboardPage role="student">
+      <Notifications />
     </DashboardPage>
   }
 />
