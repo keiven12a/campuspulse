@@ -17,11 +17,11 @@ const notificationSchema = new mongoose.Schema(
     },
 
     type: {
-      type: String,
-      enum: ['status-update'],
-      default: 'status-update',
-      required: true,
-    },
+  type: String,
+  enum: ['status-update', 'new-report'],
+  default: 'status-update',
+  required: true,
+},
 
     title: {
       type: String,
