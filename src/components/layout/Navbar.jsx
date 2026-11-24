@@ -1,11 +1,14 @@
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Bell } from 'lucide-react'
 import { useAuth } from '../../context/useAuth'
+import { getUnreadNotificationCount } from '../../services/notificationService'
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
   const { user, isAuthenticated, logout } = useAuth()
   const navigate = useNavigate()
 
@@ -20,12 +23,42 @@ function Navbar() {
 
   const handleLogout = () => {
     logout()
+    setUnreadCount(0)
     closeMenu()
     navigate('/')
   }
 
   const dashboardPath =
     user?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard'
+
+  useEffect(() => {
+  if (!isAuthenticated || user?.role !== 'student') {
+    return
+  }
+
+    let isMounted = true
+
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await getUnreadNotificationCount()
+
+        if (isMounted) {
+          setUnreadCount(response.unreadCount)
+        }
+      } catch (error) {
+        console.error('Failed to load unread notifications:', error)
+      }
+    }
+
+    fetchUnreadCount()
+
+    const intervalId = setInterval(fetchUnreadCount, 30000)
+
+    return () => {
+      isMounted = false
+      clearInterval(intervalId)
+    }
+  }, [isAuthenticated, user?.role])
 
   return (
     <nav
@@ -59,6 +92,22 @@ function Navbar() {
               <NavLink to={dashboardPath} className={navLinkStyles}>
                 Dashboard
               </NavLink>
+
+              {user?.role === 'student' && (
+                <Link
+                  to="/student/notifications"
+                  aria-label={`Notifications, ${unreadCount} unread`}
+                  className="relative rounded-lg p-2 text-text-secondary transition-colors hover:bg-background hover:text-primary"
+                >
+                  <Bell size={22} />
+
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold text-white">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              )}
 
               <button
                 type="button"
@@ -130,6 +179,25 @@ function Navbar() {
               >
                 Dashboard
               </NavLink>
+
+              {user?.role === 'student' && (
+                <Link
+                  to="/student/notifications"
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 font-medium text-text-secondary hover:text-primary"
+                >
+                  <span className="relative">
+                    <Bell size={21} />
+                    {unreadCount > 0 && (
+                      <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </span>
+                  Notifications
+                  {unreadCount > 0 && ` (${unreadCount} unread)`}
+                </Link>
+              )}
 
               <button
                 type="button"
