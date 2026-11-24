@@ -7,13 +7,20 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
 } from '../../services/notificationService'
+import { useAuth } from '../../context/useAuth'
 
 function Notifications() {
   const [notifications, setNotifications] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isMarkingAll, setIsMarkingAll] = useState(false)
+const { user } = useAuth()
+const isAdmin = user?.role === 'admin'
 
+const reportPath = (reportId) =>
+  isAdmin
+    ? `/admin/reports/${reportId}`
+    : `/student/reports/${reportId}`
   useEffect(() => {
     const loadNotifications = async () => {
       try {
@@ -86,13 +93,13 @@ function Notifications() {
     <section>
       <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <p className="text-sm font-medium text-primary">
-            Student Portal
-          </p>
+  <p className="text-sm font-medium text-primary">
+    {isAdmin ? 'Administration' : 'Student Portal'}
+  </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-text-primary">
-            Notifications
-          </h1>
+  <h1 className="mt-2 text-3xl font-bold text-text-primary">
+    Notifications
+  </h1>
 
           <p className="mt-2 text-text-secondary">
             Stay updated on changes to your campus reports.
@@ -182,7 +189,7 @@ function Notifications() {
 
                     {notification.report && (
                       <Link
-                        to={`/student/reports/${notification.report._id}`}
+                       to={reportPath(notification.report._id)}
                         onClick={() => {
                           if (!notification.isRead) {
                             handleMarkAsRead(notification._id)
