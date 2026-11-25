@@ -30,43 +30,55 @@ function ReportIssue() {
   const [successMessage, setSuccessMessage] = useState('')
   const [submitError, setSubmitError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  // Possible duplicate report states
+const [possibleDuplicates, setPossibleDuplicates] = useState([])
+const [uploadedImageUrl, setUploadedImageUrl] = useState('')
 
-  function handleChange(event) {
-    const { name, value } = event.target
+ 
+function handleChange(event) {
+  const { name, value } = event.target
 
-    setFormData((previousData) => ({
-      ...previousData,
-      [name]: value,
-    }))
-  }
+  setFormData((previousData) => ({
+    ...previousData,
+    [name]: value,
+  }))
+
+  // Clear an old duplicate warning when the report details change
+  setPossibleDuplicates([])
+}
+
 
   function handleImageChange(event) {
     const file = event.target.files[0]
 
     if (!file) return
 
-    if (!file.type.startsWith('image/')) {
-      setImageError('Please select a valid image file.')
-      setImageFile(null)
-      setImagePreview('')
-      event.target.value = ''
-      return
-    }
+   if (!file.type.startsWith('image/')) {
+  setImageError('Please select a valid image file.')
+  setImageFile(null)
+  setImagePreview('')
+  setUploadedImageUrl('')
+  event.target.value = ''
+  return
+}
 
-    if (file.size > 5 * 1024 * 1024) {
-      setImageError('Image size must be less than 5 MB.')
-      setImageFile(null)
-      setImagePreview('')
-      event.target.value = ''
-      return
-    }
+if (file.size > 5 * 1024 * 1024) {
+  setImageError('Image size must be less than 5 MB.')
+  setImageFile(null)
+  setImagePreview('')
+  setUploadedImageUrl('')
+  event.target.value = ''
+  return
+}
 
     setImageError('')
+    setUploadedImageUrl('')
     setImageFile(file)
     setImagePreview(URL.createObjectURL(file))
   }
 
   function removeImage() {
+    setUploadedImageUrl('')
     setImageFile(null)
     setImagePreview('')
     setImageError('')
@@ -107,77 +119,107 @@ function ReportIssue() {
     if (!coordinates) {
       newErrors.coordinates = 'Please select a location on the map.'
     }
+const selectedCampusExists = campusLocations.some(
+  (campus) => campus.id === selectedCampus
+)
 
+if (!selectedCampusExists) {
+  newErrors.campus = 'Please select a valid campus.'
+}
     setErrors(newErrors)
 
     return Object.keys(newErrors).length === 0
   }
 
-  async function handleSubmit(event) {
-    event.preventDefault()
+  
+async function submitReport(confirmDuplicate = false) {
+  if (isLoading || imageError) return
 
-    setSuccessMessage('')
-    setSubmitError('')
+  setSuccessMessage('')
+  setSubmitError('')
 
-    const isValid = validateForm()
+  const isValid = validateForm()
 
-    if (!isValid) return
+  if (!isValid) return
 
-    setIsLoading(true)
+  setIsLoading(true)
 
-    try {
-      let imageUrl = ''
+  try {
+    let imageUrl = uploadedImageUrl
 
-      if (imageFile) {
-        imageUrl = await uploadImage(imageFile)
-      }
+    // Upload the image only once, including when the student confirms
+    if (imageFile && !imageUrl) {
+      imageUrl = await uploadImage(imageFile)
+      setUploadedImageUrl(imageUrl)
+    }
 
-      const campus = campusLocations.find(
-        (item) => item.id === selectedCampus
-      )
+    const campus = campusLocations.find(
+      (item) => item.id === selectedCampus
+    )
 
-      const response = await createReport({
-        ...formData,
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-        location: `${campus.name} - ${formData.location}`,
-        coordinates,
-        image: imageUrl,
-      })
+    const response = await createReport({
+      ...formData,
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      location: `${campus.name} - ${formData.location}`,
+      coordinates,
+      image: imageUrl,
+      confirmDuplicate,
+    })
 
-      setSuccessMessage(
-        response.message || 'Your report has been submitted successfully!'
-      )
+    setSuccessMessage(
+      response.message || 'Your report has been submitted successfully!'
+    )
 
-      setFormData({
-        title: '',
-        category: '',
-        description: '',
-        location: '',
-      })
+    setPossibleDuplicates([])
 
-      setCoordinates(null)
-      setSelectedCampus('endayesus')
-      setImageFile(null)
-      setImagePreview('')
-      setImageError('')
-      setErrors({})
+    setFormData({
+      title: '',
+      category: '',
+      description: '',
+      location: '',
+    })
 
-      const imageInput = document.getElementById('report-image')
+    setCoordinates(null)
+    setSelectedCampus('endayesus')
+    setImageFile(null)
+    setImagePreview('')
+    setImageError('')
+    setUploadedImageUrl('')
+    setErrors({})
 
-      if (imageInput) {
-        imageInput.value = ''
-      }
-    } catch (error) {
+    const imageInput = document.getElementById('report-image')
+
+    if (imageInput) {
+      imageInput.value = ''
+    }
+  } catch (error) {
+    const responseData = error.response?.data
+
+    if (
+      error.response?.status === 409 &&
+      responseData?.possibleDuplicate
+    ) {
+      setPossibleDuplicates(responseData.duplicates || [])
+      setSubmitError('')
+    } else {
       setSubmitError(
-        error.response?.data?.message ||
+        responseData?.message ||
         error.message ||
         'Failed to submit your report. Please try again.'
       )
-    } finally {
-      setIsLoading(false)
     }
+  } finally {
+    setIsLoading(false)
   }
+}
+
+async function handleSubmit(event) {
+  event.preventDefault()
+  setPossibleDuplicates([])
+  await submitReport(false)
+}
+
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -292,13 +334,15 @@ function ReportIssue() {
               id="report-campus"
               value={selectedCampus}
               onChange={(event) => {
-                setSelectedCampus(event.target.value)
-                setCoordinates(null)
-                setErrors((previous) => ({
-                  ...previous,
-                  coordinates: '',
-                }))
-              }}
+  setSelectedCampus(event.target.value)
+  setCoordinates(null)
+  setPossibleDuplicates([])
+  setErrors((previous) => ({
+    ...previous,
+    coordinates: '',
+    campus: '',
+  }))
+}}
               className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-text-primary"
             >
               {campusLocations.map((campus) => (
@@ -306,8 +350,15 @@ function ReportIssue() {
                   {campus.name}
                 </option>
               ))}
-            </select>
+                       </select>
+
+            {errors.campus && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.campus}
+              </p>
+            )}
           </div>
+
 
           {/* Geographical Location */}
           <div>
@@ -321,14 +372,18 @@ function ReportIssue() {
 
             <CampusMap
               campusId={selectedCampus}
-              onCampusChange={setSelectedCampus}
-              onLocationSelect={(newCoordinates) => {
-                setCoordinates(newCoordinates)
-                setErrors((previous) => ({
-                  ...previous,
-                  coordinates: '',
-                }))
-              }}
+             onCampusChange={(campusId) => {
+  setSelectedCampus(campusId)
+  setPossibleDuplicates([])
+}}
+onLocationSelect={(newCoordinates) => {
+  setCoordinates(newCoordinates)
+  setPossibleDuplicates([])
+  setErrors((previous) => ({
+    ...previous,
+    coordinates: '',
+  }))
+}}
             />
 
             {coordinates && (
@@ -355,12 +410,12 @@ function ReportIssue() {
             </label>
 
             <input
-              id="report-image"
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-sm text-text-secondary"
-            />
+  id="report-image"
+  type="file"
+  accept="image/*,.pdf,video/*"
+  onChange={handleImageChange}
+  className="w-full rounded-lg border border-border bg-surface px-4 py-3 text-sm text-text-secondary"
+/>
 
             {imageError && (
               <p className="mt-2 text-sm text-red-600" role="alert">
@@ -386,6 +441,75 @@ function ReportIssue() {
               </div>
             )}
           </div>
+
+{possibleDuplicates.length > 0 && (
+  <div
+    className="space-y-4 rounded-lg border border-amber-300 bg-amber-50 p-4"
+    role="alert"
+  >
+    <div>
+      <h3 className="font-semibold text-amber-900">
+        Possible Duplicate Report
+      </h3>
+
+      <p className="mt-1 text-sm text-amber-800">
+        Similar unresolved reports already exist at this location.
+        Please review them before continuing.
+      </p>
+    </div>
+
+    <div className="space-y-3">
+      {possibleDuplicates.map((report) => (
+        <div
+          key={report._id}
+          className="rounded-lg border border-amber-200 bg-white p-3"
+        >
+          <h4 className="font-semibold text-text-primary">
+            {report.title}
+          </h4>
+
+          <p className="mt-1 text-sm text-text-secondary">
+            {report.description}
+          </p>
+
+          <div className="mt-2 flex flex-wrap gap-3 text-xs text-text-secondary">
+            <span>
+              Status: {report.status}
+            </span>
+
+            <span>
+              Similarity: {report.similarityScore}%
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <p className="text-sm text-amber-900">
+      If this is a separate issue, you can still submit your report.
+    </p>
+
+    <div className="flex flex-wrap gap-3">
+      <Button
+        type="button"
+        onClick={() => submitReport(true)}
+        disabled={isLoading}
+      >
+        {isLoading ? 'Submitting...' : 'Submit Anyway'}
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => setPossibleDuplicates([])}
+        disabled={isLoading}
+      >
+        Cancel
+      </Button>
+    </div>
+  </div>
+)}
+
 
           {successMessage && (
             <p
