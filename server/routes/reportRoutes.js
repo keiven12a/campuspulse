@@ -8,6 +8,35 @@ const protect = require('../middleware/authMiddleware')
 
 const router = express.Router()
 
+// Normalize text before comparing report descriptions and titles
+function normalizeText(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter((word) => word.length > 2)
+}
+
+// Calculate how similar two pieces of text are
+function calculateSimilarity(firstText, secondText) {
+  const firstWords = new Set(normalizeText(firstText))
+  const secondWords = new Set(normalizeText(secondText))
+
+  if (firstWords.size === 0 || secondWords.size === 0) {
+    return 0
+  }
+
+  const commonWords = [...firstWords].filter((word) =>
+    secondWords.has(word)
+  )
+
+  const totalWords = new Set([...firstWords, ...secondWords])
+
+  return commonWords.length / totalWords.size
+}
+
+// Create a new report
+
 // Create a new report
 router.post('/', protect, async (req, res) => {
   try {
@@ -18,7 +47,63 @@ router.post('/', protect, async (req, res) => {
       location,
       coordinates,
       image,
+      confirmDuplicate = false,
     } = req.body
+
+    // Check for similar unresolved reports unless the student confirms submission
+    if (!confirmDuplicate) {
+      const existingReports = await Report.find({
+        category,
+        location,
+        status: { $in: ['pending', 'in-progress'] },
+      })
+        .select('title description category location status createdAt')
+        .sort({ createdAt: -1 })
+        .limit(20)
+
+      const possibleDuplicates = existingReports
+        .map((existingReport) => {
+          const titleSimilarity = calculateSimilarity(
+            title || '',
+            existingReport.title
+          )
+
+          const descriptionSimilarity = calculateSimilarity(
+            description || '',
+            existingReport.description
+          )
+
+          const similarity =
+            titleSimilarity * 0.4 + descriptionSimilarity * 0.6
+
+          return {
+            report: existingReport,
+            similarity,
+          }
+        })
+        .filter((item) => item.similarity >= 0.3)
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, 3)
+
+      if (possibleDuplicates.length > 0) {
+        return res.status(409).json({
+          success: false,
+          possibleDuplicate: true,
+          message:
+            'Similar unresolved reports already exist at this location. Please review them before submitting.',
+          duplicates: possibleDuplicates.map(({ report, similarity }) => ({
+            _id: report._id,
+            title: report.title,
+            description: report.description,
+            category: report.category,
+            location: report.location,
+            status: report.status,
+            createdAt: report.createdAt,
+            similarityScore: Math.round(similarity * 100),
+          })),
+        })
+      }
+    }
 
     // Create report using the authenticated user
     const report = await Report.create({
@@ -76,6 +161,7 @@ router.post('/', protect, async (req, res) => {
     })
   }
 })
+
 
 // Get reports submitted by the authenticated user
 router.get('/my', protect, async (req, res) => {
