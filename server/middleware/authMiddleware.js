@@ -17,6 +17,14 @@ const protect = async (req, res, next) => {
     // Extract token
     const token = authHeader.split(' ')[1]
 
+    // Check JWT configuration
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({
+        success: false,
+        message: 'Authentication service is not configured.',
+      })
+    }
+
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
