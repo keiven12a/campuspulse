@@ -10,8 +10,26 @@ const notificationRoutes = require('./routes/notificationRoutes')
 
 const app = express()
 
-// Middleware
-app.use(cors())
+// Allow requests from the CampusPulse frontend
+const allowedOrigins = [
+  'http://localhost:5173',
+]
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests without an Origin header (such as Supertest)
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true)
+      }
+
+      return callback(new Error('Not allowed by CORS'))
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+)
+
 app.use(express.json())
 
 // API routes
